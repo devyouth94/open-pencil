@@ -39,12 +39,19 @@ const OPEN: VectorNetwork = {
   regions: []
 }
 
+/** The closed square with a separate open line at x = 60 beside it. */
+const MIXED: VectorNetwork = {
+  vertices: [...SQUARE.vertices, { x: 60, y: 0 }, { x: 60, y: SIDE }],
+  segments: [...SQUARE.segments, { start: 4, end: 5, tangentStart: corner, tangentEnd: corner }],
+  regions: SQUARE.regions
+}
+
 /** Whether the shape's 8 px stroke inks the row through its middle `x` px from its left edge. */
-function inks(align: Stroke['align'], network = SQUARE): (x: number) => boolean {
+function inks(align: Stroke['align'], network = SQUARE, span = SIDE): (x: number) => boolean {
   const graph = new SceneGraph()
   const page = graph.getPages()[0]
   const vector = graph.createNode('VECTOR', page.id, {
-    width: SIDE,
+    width: span,
     height: SIDE,
     vectorNetwork: network,
     fills: [],
@@ -81,7 +88,7 @@ function inks(align: Stroke['align'], network = SQUARE): (x: number) => boolean 
       'pixels'
     )
     // The export starts where the stroke's ink can reach, outside the square's left edge.
-    const left = (image.width() - SIDE) / 2
+    const left = (image.width() - span) / 2
     const row = Math.floor(image.height() / 2)
     const width = image.width()
     image.delete()
@@ -107,4 +114,24 @@ test('an open vector path strokes centred whatever its alignment', () => {
     const open = inks(align, OPEN)
     expect([open(34), open(38), open(42), open(46)]).toEqual([false, true, true, false])
   }
+})
+
+// Closed regions take the stroke's side; an open line beside them strokes centred, not doubled.
+test('a vector with a closed region and an open line aligns only the region', () => {
+  const inside = inks('INSIDE', MIXED, 60)
+  expect([inside(2), inside(6), inside(54), inside(58), inside(62)]).toEqual([
+    true,
+    true,
+    false,
+    true,
+    true
+  ])
+  const outside = inks('OUTSIDE', MIXED, 60)
+  expect([outside(-6), outside(2), outside(54), outside(58), outside(62)]).toEqual([
+    true,
+    false,
+    false,
+    true,
+    true
+  ])
 })

@@ -155,15 +155,15 @@ export function strokeOverflow(
   shape?: StrokeShape
 ): number {
   const line = shape?.type === 'LINE'
-  // Open paths enclose nothing to take a side of, so their strokes draw centred.
-  const open = !!network && network.segments.length > 0 && network.regions.length === 0
+  // Open segments enclose nothing to take a side of, so their strokes draw centred.
+  const enclosed = new Set(network?.regions.flatMap((region) => region.loops.flat()))
+  const open = network?.segments.some((_, index) => !enclosed.has(index)) ?? false
   let overflow = 0
   for (const stroke of strokes ?? []) {
     if (!stroke.visible) continue
-    const align = open ? 'CENTER' : stroke.align
-    let extra = 0
-    if (line || align === 'OUTSIDE') extra = stroke.weight
-    else if (align === 'CENTER') extra = stroke.weight / 2
+    let extra = open ? stroke.weight / 2 : 0
+    if (line || stroke.align === 'OUTSIDE') extra = stroke.weight
+    else if (stroke.align === 'CENTER') extra = stroke.weight / 2
     const miter = network
       ? miterRatio(network, stroke.join ?? shape?.strokeJoin, shape?.strokeMiterLimit)
       : 1

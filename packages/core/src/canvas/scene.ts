@@ -663,7 +663,7 @@ function vectorStrokePaths(r: SkiaRenderer, node: SceneNode): Path[] | null {
 function strokeOutlineKey(
   node: SceneNode,
   stroke: SceneNode['strokes'][0],
-  source: 'runs' | 'regions'
+  source: 'runs' | 'regions' | 'closed' | 'open'
 ): string {
   return `${node.id}|${source}|${stroke.weight}|${stroke.cap ?? node.strokeCap}|${stroke.join ?? node.strokeJoin}|${node.strokeMiterLimit}`
 }
@@ -760,8 +760,8 @@ function drawRegularStroke(
 
 /**
  * Strokes a vector's paths on the side its alignment takes, as a shape's stroke is: a centred
- * stroke twice as wide, kept inside the paths for `INSIDE` and outside them for `OUTSIDE`. Open
- * paths enclose nothing to take a side of, so a vector without closed regions strokes centred.
+ * stroke twice as wide, kept inside its closed regions for `INSIDE` and outside them for
+ * `OUTSIDE`. Open segments enclose nothing to take a side of, so they stroke centred.
  */
 function drawAlignedVectorPathStrokes(
   r: SkiaRenderer,
@@ -771,25 +771,47 @@ function drawAlignedVectorPathStrokes(
   stroke: SceneNode['strokes'][0],
   sc: Color
 ): void {
-  if (stroke.align === 'CENTER' || !node.vectorNetwork?.regions.length) {
+  const miter = node.strokeMiterLimit
+  // `vectorNetworkToPath` lists a path for each region, then one for the open segments.
+  const regions = node.vectorNetwork?.regions.length ?? 0
+  const closed = vectorPaths.slice(0, regions)
+  // The inside of the regions, which an inside stroke keeps to; a union that fails strokes centred.
+  const inside = stroke.align === 'INSIDE' && closed.length > 0 ? unitePaths(r, closed) : null
+  const sided = stroke.align === 'OUTSIDE' ? closed.length > 0 : !!inside
+  if (!sided) {
     const outlineKey = strokeOutlineKey(node, stroke, 'regions')
-    drawVectorPathStrokes(r, canvas, vectorPaths, stroke, sc, node.strokeMiterLimit, outlineKey)
+    drawVectorPathStrokes(r, canvas, vectorPaths, stroke, sc, miter, outlineKey)
     return
   }
   const doubled = { ...stroke, weight: stroke.weight * 2 }
-  const outlineKey = strokeOutlineKey(node, doubled, 'regions')
   canvas.save()
-  if (stroke.align === 'INSIDE') {
-    const inside = unitePaths(r, vectorPaths)
-    if (inside) {
-      canvas.clipPath(inside, r.ck.ClipOp.Intersect, true)
-      inside.delete()
-    }
+  if (inside) {
+    canvas.clipPath(inside, r.ck.ClipOp.Intersect, true)
+    inside.delete()
   } else {
-    for (const path of vectorPaths) canvas.clipPath(path, r.ck.ClipOp.Difference, true)
+    for (const path of closed) canvas.clipPath(path, r.ck.ClipOp.Difference, true)
   }
-  drawVectorPathStrokes(r, canvas, vectorPaths, doubled, sc, node.strokeMiterLimit, outlineKey)
+  drawVectorPathStrokes(
+    r,
+    canvas,
+    closed,
+    doubled,
+    sc,
+    miter,
+    strokeOutlineKey(node, doubled, 'closed')
+  )
   canvas.restore()
+  const open = vectorPaths.slice(regions)
+  if (open.length > 0)
+    drawVectorPathStrokes(
+      r,
+      canvas,
+      open,
+      stroke,
+      sc,
+      miter,
+      strokeOutlineKey(node, stroke, 'open')
+    )
 }
 
 /** One path covering every path given, which a clip can keep the inside of. */
