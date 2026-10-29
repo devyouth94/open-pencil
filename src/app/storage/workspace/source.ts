@@ -30,17 +30,8 @@ export async function purgeUnchangedCopies(
 ): Promise<void> {
   const before = new Map(read.map((metadata) => [metadata.id, metadata]))
   for (const id of ids) {
-    const then = before.get(id)
-    const now = await store.getMeta(id)
-    if (
-      then &&
-      now &&
-      now.revision === then.revision &&
-      now.syncStatus === then.syncStatus &&
-      now.tombstoned === then.tombstoned
-    ) {
-      await store.remove(id)
-    }
+    const unchangedFrom = before.get(id)
+    if (unchangedFrom) await store.remove(id, { unchangedFrom })
   }
 }
 

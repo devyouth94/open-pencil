@@ -1,42 +1,42 @@
-import { beforeEach, describe, expect, test } from 'bun:test'
+import 'fake-indexeddb/auto'
+import { describe, expect, test } from 'bun:test'
 
 import { createMemoryLocalCanvasStore, type LocalCanvasStore } from '@/app/storage/local-store'
+import { createIdbLocalCanvasStore } from '@/app/storage/local-store/idb'
 import { purgeUnchangedCopies } from '@/app/storage/workspace/source'
 
-let store: LocalCanvasStore
-
-function write(id: string) {
+function write(store: LocalCanvasStore, id: string, syncStatus: 'synced' | 'pending') {
   return store.writeCanvas({
     id,
     providerId: 's3-compatible',
     name: id,
     figBytes: new Uint8Array([1]),
-    syncStatus: 'synced'
+    syncStatus
   })
 }
 
-beforeEach(() => {
-  store = createMemoryLocalCanvasStore()
-})
-
-describe('purging copies deleted from storage', () => {
-  test('removes a copy that stayed as it was read', async () => {
-    await write('gone')
-    await purgeUnchangedCopies(store, await store.listMetas(true), ['gone'])
-    expect(await store.getMeta('gone')).toBeNull()
-  })
-
-  test('keeps a copy edited while the provider was listed', async () => {
-    await write('edited')
-    const read = await store.listMetas(true)
-    await store.writeCanvas({
-      id: 'edited',
-      providerId: 's3-compatible',
-      name: 'edited',
-      figBytes: new Uint8Array([2]),
-      syncStatus: 'pending'
+for (const [kind, create] of [
+  ['memory', createMemoryLocalCanvasStore],
+  ['IndexedDB', createIdbLocalCanvasStore]
+] as const) {
+  describe(`purging copies deleted from storage (${kind})`, () => {
+    test('removes a copy that stayed as it was read', async () => {
+      const store = create()
+      const id = crypto.randomUUID()
+      await write(store, id, 'synced')
+      await purgeUnchangedCopies(store, await store.listMetas(true), [id])
+      expect(await store.getMeta(id)).toBeNull()
+      expect(await store.readFig(id)).toBeNull()
     })
-    await purgeUnchangedCopies(store, read, ['edited'])
-    expect(await store.getMeta('edited')).toMatchObject({ syncStatus: 'pending' })
+
+    test('keeps a copy edited while the provider was listed', async () => {
+      const store = create()
+      const id = crypto.randomUUID()
+      await write(store, id, 'synced')
+      const read = await store.listMetas(true)
+      await write(store, id, 'pending')
+      await purgeUnchangedCopies(store, read, [id])
+      expect(await store.getMeta(id)).toMatchObject({ syncStatus: 'pending', revision: 2 })
+    })
   })
-})
+}
