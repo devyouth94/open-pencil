@@ -3,6 +3,7 @@ import { beforeAll, expect, test } from 'bun:test'
 import { expectDefined } from '#core-tests/helpers/assert'
 
 import { SceneGraph, type Stroke, type VectorNetwork } from '@open-pencil/scene-graph'
+import { strokeOverflow } from '@open-pencil/scene-graph/geometry'
 
 import { SkiaRenderer } from '#core/canvas/renderer'
 import { getCanvasKit } from '#core/canvaskit'
@@ -134,4 +135,25 @@ test('a vector with a closed region and an open line aligns only the region', ()
     true,
     true
   ])
+})
+
+// Bounds reach as far as that ink: a full stroke out of a closed region, half one beside an open line.
+test('stroke bounds reach as far as the side each part of a vector strokes', () => {
+  const outside = (align: Stroke['align']): Stroke[] => [
+    {
+      type: 'SOLID',
+      color: { r: 0, g: 0, b: 0, a: 1 },
+      weight: 8,
+      opacity: 1,
+      visible: true,
+      align,
+      cap: 'NONE',
+      join: 'ROUND',
+      dashPattern: []
+    }
+  ]
+  expect(strokeOverflow(outside('OUTSIDE'), 'NONE', OPEN)).toBe(4)
+  expect(strokeOverflow(outside('OUTSIDE'), 'NONE', MIXED)).toBe(8)
+  expect(strokeOverflow(outside('INSIDE'), 'NONE', MIXED)).toBe(4)
+  expect(strokeOverflow(outside('INSIDE'), 'NONE', SQUARE)).toBe(0)
 })
