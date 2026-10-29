@@ -65,4 +65,35 @@ describe('deleting a stored document', () => {
     expect(await store.getMeta(POSTER.id)).toMatchObject({ ...CLOUD, tombstoned: true })
     expect(await getOutbox().list()).toMatchObject([{ canvasId: POSTER.id, type: 'deleteCanvas' }])
   })
+  test('refuses a copy of the same ID that lives in another location', async () => {
+    await store.writeCanvas({
+      id: POSTER.id,
+      ...BUCKET,
+      name: POSTER.name,
+      figBytes: new Uint8Array([1]),
+      syncStatus: 'synced'
+    })
+
+    await expect(deleteStoredDocument(POSTER, CLOUD)).rejects.toThrow('another location')
+    expect(await store.getMeta(POSTER.id)).toMatchObject({ ...BUCKET, tombstoned: false })
+    expect(await getOutbox().list()).toEqual([])
+  })
+
+  test('shows the document again when its deletion cannot be queued', async () => {
+    await store.writeCanvas({
+      id: POSTER.id,
+      ...BUCKET,
+      name: POSTER.name,
+      figBytes: new Uint8Array([1]),
+      syncStatus: 'synced'
+    })
+    const outbox = createMemoryOutbox()
+    resetOutboxForTests({
+      ...outbox,
+      enqueue: () => Promise.reject(new Error('quota exceeded'))
+    })
+
+    await expect(deleteStoredDocument(POSTER, BUCKET)).rejects.toThrow('quota exceeded')
+    expect(await store.listMetas()).toMatchObject([{ id: POSTER.id, syncStatus: 'synced' }])
+  })
 })

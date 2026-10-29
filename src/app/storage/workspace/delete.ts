@@ -1,5 +1,6 @@
 import {
   sameStorageDocument,
+  sameStorageLocation,
   storageLocationOf,
   type StorageDocument,
   type StorageDocumentBinding,
@@ -12,9 +13,10 @@ import { emitStorageWorkspaceEvent } from '@/app/storage/workspace/events'
 import { closeTab, getTabsSnapshot } from '@/app/tabs'
 
 /**
- * Deletes a stored document for everyone, once the person has confirmed it. Its tabs close without
- * asking, home stops listing it at once, and the provider deletes it when the sync engine reaches
- * the job, so a deletion made offline or refused for now is kept until it goes through.
+ * Deletes a stored document for everyone, once the person has confirmed it. Home stops listing it at
+ * once and the provider deletes it when the sync engine reaches the job, so a deletion made offline
+ * or refused for now is kept until it goes through. The document's tabs in this window close last,
+ * without asking, so a deletion that could not be recorded leaves their edits as they were.
  */
 export async function deleteStoredDocument(
   document: StorageDocument,
@@ -24,14 +26,11 @@ export async function deleteStoredDocument(
     ...storageLocationOf(location),
     documentId: document.id
   }
-  for (const tab of getTabsSnapshot()) {
-    const open = tab.store.getStorageBinding()
-    if (open && sameStorageDocument(open, binding)) await closeTab(tab.id, 'discard')
-  }
   const store = getLocalCanvasStore()
   // The sync engine finds the provider through the device's copy, which home seeds as it lists.
-  if (!(await store.getMeta(document.id))) {
-    await store.upsertIndexMeta({
+  const copy =
+    (await store.getMeta(document.id)) ??
+    (await store.upsertIndexMeta({
       id: document.id,
       ...storageLocationOf(location),
       name: document.name,
@@ -40,14 +39,31 @@ export async function deleteStoredDocument(
       lastSyncedAt: document.updatedAt,
       lastSyncError: null,
       remoteRevision: document.revision ?? null
-    })
+    }))
+  // The job deletes wherever the copy lives, so a copy of another location is not this document.
+  if (!sameStorageLocation(storageLocationOf(copy), location)) {
+    throw new Error(`Document ${document.id} is stored in another location`)
   }
   await store.tombstone(document.id)
-  await enqueueDeleteCanvas(document.id)
+  try {
+    await enqueueDeleteCanvas(document.id)
+  } catch (error) {
+    // Without its job the tombstone would hide a document that stays in storage.
+    await store.updateMeta(document.id, {
+      tombstoned: false,
+      syncStatus: copy.syncStatus,
+      updatedAt: copy.updatedAt
+    })
+    throw error
+  }
   forgetRecentStorageDocument(binding)
   emitStorageWorkspaceEvent({
     ...storageLocationOf(location),
     documentId: document.id,
     kind: 'changed'
   })
+  for (const tab of getTabsSnapshot()) {
+    const open = tab.store.getStorageBinding()
+    if (open && sameStorageDocument(open, binding)) await closeTab(tab.id, 'discard')
+  }
 }
