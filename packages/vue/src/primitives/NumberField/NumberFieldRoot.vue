@@ -81,8 +81,11 @@ const ariaLabelValue = computed(() => ariaLabel)
 let interactionStartValue = 0
 let interactionStartedMixed = false
 let mutationRequested = false
-/** The draft the arrow keys last wrote, whose value is already absolute: `-1` is not "minus 1". */
-let steppedDraft: string | null = null
+/**
+ * The draft the field itself last wrote, on focus or with the arrow keys, whose value is already
+ * absolute: `-1` there is not "minus 1". A draft the user types is an expression.
+ */
+let absoluteDraft: string | null = null
 let stopMove: (() => void) | undefined
 let stopUp: (() => void) | undefined
 let stopCancel: (() => void) | undefined
@@ -110,7 +113,7 @@ function beginInteraction() {
   interactionStartedMixed = isMixed.value
   workingValue.value = numericValue.value
   mutationRequested = false
-  steppedDraft = null
+  absoluteDraft = null
   invalidReason.value = null
 }
 
@@ -148,6 +151,8 @@ function startEdit() {
   if (editing.value || !canMutate()) return
   beginInteraction()
   draftValue.value = interactionStartedMixed ? '' : String(interactionStartValue)
+  // A mixed field's empty draft stays an expression, which Enter rejects.
+  absoluteDraft = interactionStartedMixed ? null : draftValue.value
   editing.value = true
   void nextTick(() => {
     inputRef.value?.focus()
@@ -179,7 +184,7 @@ function commitEdit() {
   if (!editing.value) return
   const expression = draftValue.value
   const { value, unit } = splitUnit(expression)
-  if (expression === steppedDraft) {
+  if (expression === absoluteDraft) {
     finishCommit(workingValue.value, unit)
     return
   }
@@ -291,7 +296,7 @@ function stepValueFromKeyboard(event: KeyboardEvent) {
   // A unit typed after the value stays on it, for the commit to report.
   const draft = editing.value ? splitUnit(draftValue.value) : undefined
   const draftResult =
-    draft && draftValue.value !== steppedDraft
+    draft && draftValue.value !== absoluteDraft
       ? evaluateNumberExpression(draft.value, {
           current: interactionStartValue,
           max,
@@ -309,7 +314,7 @@ function stepValueFromKeyboard(event: KeyboardEvent) {
   )
   updateValue(next)
   draftValue.value = `${next}${draft?.unit ?? ''}`
-  steppedDraft = draftValue.value
+  absoluteDraft = draftValue.value
 
   if (!editing.value) {
     emit('commit', next, interactionStartValue)

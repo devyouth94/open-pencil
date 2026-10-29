@@ -122,4 +122,14 @@ test('a typed % or px switches the unit of line height and letter spacing', asyn
   await letterSpacing.press('ArrowDown')
   await letterSpacing.press('Enter')
   await expect.poll(() => read('letterSpacing')).toEqual({ value: -2, unit: 'PIXELS' })
+
+  // The value a field opens with is that value, not an expression: Enter keeps it, ArrowUp steps up.
+  await letterSpacing.blur()
+  await letterSpacing.focus()
+  await letterSpacing.press('Enter')
+  await expect.poll(() => read('letterSpacing')).toEqual({ value: -2, unit: 'PIXELS' })
+  await letterSpacing.focus()
+  await letterSpacing.press('ArrowUp')
+  await letterSpacing.press('Enter')
+  await expect.poll(() => read('letterSpacing')).toEqual({ value: -1, unit: 'PIXELS' })
 })
