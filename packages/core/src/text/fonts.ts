@@ -290,18 +290,41 @@ export class FontManager {
   }
 
   private async loadFamilyFaces(family: string): Promise<FamilyFace[] | null> {
+    const installed = this.installedFamilyFaces(family)
+    if (installed) return installed
+    const web = await this.webFonts.familyFaces(family)
+    if (web.length > 0) return web
+    return this.bundledFamilyFaces(family)
+  }
+
+  /** The faces of an installed family, from the host's catalog or the browser's local fonts. */
+  private installedFamilyFaces(family: string): FamilyFace[] | null {
     // The desktop host lists weights by generated names, so its faces take the standard names.
     const host = this.hostStyles.get(family)
     if (host && host.length > 0) return standardFaces(host)
     const local = this.localFonts?.filter((font) => font.family === family) ?? []
-    if (local.length > 0) return facesFromStyles(local.map((font) => font.style))
-    const web = await this.webFonts.familyFaces(family)
-    if (web.length > 0) return web
-    // The bundled fonts name their faces as Google Fonts does; their keys are style keys.
+    return local.length > 0 ? facesFromStyles(local.map((font) => font.style)) : null
+  }
+
+  /** The bundled fonts name their faces as Google Fonts does; their keys are style keys. */
+  private bundledFamilyFaces(family: string): FamilyFace[] | null {
     const bundled = Object.keys(BUNDLED_FONTS)
       .filter((key) => key.startsWith(`${family}|`))
       .map((key) => key.slice(family.length + 1))
     return bundled.length > 0 ? standardFaces(bundled) : null
+  }
+
+  /**
+   * The faces known for a family without asking a provider: those looked up, else its installed
+   * or bundled faces. A web family not looked up has none here, and its faces take Google
+   * Fonts' names, which a provider would give them too.
+   */
+  namedFamilyFaces(family: string): FamilyFace[] | null {
+    return (
+      this.knownFamilyFaces.get(family) ??
+      this.installedFamilyFaces(family) ??
+      this.bundledFamilyFaces(family)
+    )
   }
 
   private forgetFamilyFaces(): void {

@@ -17,7 +17,7 @@ export interface NamedFaceStyle {
  */
 export function faceStyleName(family: string, weight: number, italic: boolean): string {
   const face = fontManager
-    .loadedFamilyFaces(family)
+    .namedFamilyFaces(family)
     ?.find((candidate) => candidate.weight === weight && candidate.italic === italic)
   return face?.style ?? standardStyleName(weight, italic)
 }
@@ -39,7 +39,7 @@ function spelled(style: string): string {
  * slant its words stand for.
  */
 export function namedFace(family: string, style: string): FamilyFace {
-  const faces = fontManager.loadedFamilyFaces(family) ?? []
+  const faces = fontManager.namedFamilyFaces(family) ?? []
   const face =
     faces.find((candidate) => candidate.style === style) ??
     faces.find((candidate) => spelled(candidate.style) === spelled(style))

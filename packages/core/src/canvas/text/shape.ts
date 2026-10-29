@@ -230,22 +230,7 @@ export async function withFigExportRuntime<T>(
   ck: CanvasKit | undefined,
   write: (runtime: FigNodeChangeExportRuntime) => Promise<T>
 ): Promise<T> {
-  // A face is saved under its font's name, which the family's faces give once looked up.
-  await Promise.all(
-    textFamilies(graph).map((family) => fontManager.familyFaces(family).catch(() => null))
-  )
   const named = { textDecorations, fontStyleName: faceStyleName }
   if (!needsShaping(graph)) return write({ ...EMPTY_EXPORT_RUNTIME, ...named })
   return withTextShaper(ck ?? (await getCanvasKit()), (shapeText) => write({ shapeText, ...named }))
-}
-
-/** The families the document's text is set in, its ranges' included. */
-function textFamilies(graph: SceneGraph): string[] {
-  const families = new Set<string>()
-  for (const node of graph.nodes.values()) {
-    if (node.type !== 'TEXT') continue
-    families.add(node.fontFamily)
-    for (const run of node.styleRuns) if (run.style.fontFamily) families.add(run.style.fontFamily)
-  }
-  return [...families]
 }
