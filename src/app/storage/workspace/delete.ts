@@ -48,12 +48,14 @@ export async function deleteStoredDocument(
   try {
     await enqueueDeleteCanvas(document.id)
   } catch (error) {
-    // Without its job the tombstone would hide a document that stays in storage.
-    await store.updateMeta(document.id, {
-      tombstoned: false,
-      syncStatus: copy.syncStatus,
-      updatedAt: copy.updatedAt
-    })
+    // Without its job the tombstone would hide a document that stays in storage. The sync state
+    // goes back only if nothing was saved meanwhile, since a newer save has its own upload to make.
+    await store.updateMeta(document.id, { tombstoned: copy.tombstoned })
+    await store.updateMeta(
+      document.id,
+      { syncStatus: copy.syncStatus, updatedAt: copy.updatedAt },
+      { expectedRevision: copy.revision }
+    )
     throw error
   }
   forgetRecentStorageDocument(binding)
@@ -62,8 +64,12 @@ export async function deleteStoredDocument(
     documentId: document.id,
     kind: 'changed'
   })
+  // The deletion is recorded by now, so a tab that fails to close does not undo it.
   for (const tab of getTabsSnapshot()) {
     const open = tab.store.getStorageBinding()
-    if (open && sameStorageDocument(open, binding)) await closeTab(tab.id, 'discard')
+    if (!open || !sameStorageDocument(open, binding)) continue
+    await closeTab(tab.id, 'discard').catch((error: unknown) => {
+      console.error('[Storage] Closing a deleted document’s tab failed:', error)
+    })
   }
 }

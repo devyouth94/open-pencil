@@ -96,4 +96,21 @@ describe('deleting a stored document', () => {
     await expect(deleteStoredDocument(POSTER, BUCKET)).rejects.toThrow('quota exceeded')
     expect(await store.listMetas()).toMatchObject([{ id: POSTER.id, syncStatus: 'synced' }])
   })
+  test('keeps an earlier deletion hidden when a repeated one cannot be queued', async () => {
+    await store.writeCanvas({
+      id: POSTER.id,
+      ...BUCKET,
+      name: POSTER.name,
+      figBytes: new Uint8Array([1]),
+      syncStatus: 'synced'
+    })
+    await store.tombstone(POSTER.id)
+    resetOutboxForTests({
+      ...createMemoryOutbox(),
+      enqueue: () => Promise.reject(new Error('quota exceeded'))
+    })
+
+    await expect(deleteStoredDocument(POSTER, BUCKET)).rejects.toThrow('quota exceeded')
+    expect(await store.getMeta(POSTER.id)).toMatchObject({ tombstoned: true })
+  })
 })
