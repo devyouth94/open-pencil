@@ -14,7 +14,7 @@ import type { Color } from '@open-pencil/scene-graph/primitives'
 import { createSceneGeometry, nodeOrientationMatrix, projectedNode } from '#core/geometry'
 import { shownText } from '#core/text/case'
 import { mayHoldEmoji } from '#core/text/emoji'
-import { fontManager } from '#core/text/fonts'
+import { fontManager } from '#core/text/font/manager'
 import {
   addStrokeRunToPath,
   strokeRuns,

@@ -19,8 +19,8 @@ import { getCanvasKit } from '#core/canvaskit'
 import { shownText } from '#core/text/case'
 import { EMOJI_METRICS_FAMILY } from '#core/text/emoji'
 import type { OutlineCommand } from '#core/text/font/glyphs'
+import { fontManager } from '#core/text/font/manager'
 import { faceStyleName } from '#core/text/font/names'
-import { fontManager } from '#core/text/fonts'
 import { nextGraphemeBoundary } from '#core/text/graphemes'
 
 /**

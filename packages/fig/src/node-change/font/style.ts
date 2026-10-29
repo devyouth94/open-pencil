@@ -2,10 +2,10 @@ import type { CharacterStyleOverride, SceneNode } from '@open-pencil/scene-graph
 import { normalizeFontFamily, standardStyleName } from '@open-pencil/scene-graph/font-style'
 
 /** The name a family's font gives its face at a weight and slant. */
-export type FaceStyleNamer = (family: string, weight: number, italic: boolean) => string
+export type StyleNamer = (family: string, weight: number, italic: boolean) => string
 
 /** Names a face as Google Fonts does, for a writer that cannot read the fonts. */
-export const standardFaceNamer: FaceStyleNamer = (_family, weight, italic) =>
+export const standardStyleNamer: StyleNamer = (_family, weight, italic) =>
   standardStyleName(weight, italic)
 
 /**
@@ -13,7 +13,7 @@ export const standardFaceNamer: FaceStyleNamer = (_family, weight, italic) =>
  * name. Figma finds a face by its exact name, and its Inter is Inter 3, which spaces the names
  * our Inter 4 joins (measured 2026-10-28).
  */
-const FIGMA_FACE_NAMES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+const FIGMA_STYLE_NAMES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   Inter: {
     ExtraLight: 'Extra Light',
     'ExtraLight Italic': 'Extra Light Italic',
@@ -31,11 +31,11 @@ const FIGMA_FACE_NAMES: Readonly<Record<string, Readonly<Record<string, string>>
 export function figmaStyleName(
   node: SceneNode,
   style: CharacterStyleOverride,
-  nameFace: FaceStyleNamer
+  nameFace: StyleNamer
 ): string {
   const family = style.fontFamily ?? node.fontFamily
   const own = style.fontStyle !== undefined ? style.fontStyle : node.fontStyle
   const name =
     own ?? nameFace(family, style.fontWeight ?? node.fontWeight, style.italic ?? node.italic)
-  return FIGMA_FACE_NAMES[normalizeFontFamily(family)]?.[name] ?? name
+  return FIGMA_STYLE_NAMES[normalizeFontFamily(family)]?.[name] ?? name
 }

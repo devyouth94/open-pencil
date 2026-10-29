@@ -2,9 +2,9 @@ import { uniqBy } from 'es-toolkit/array'
 
 import type { CharacterStyleOverride, SceneNode } from '@open-pencil/scene-graph'
 
+import { fontManager } from '#core/text/font/manager'
 import { textStyleName } from '#core/text/font/names'
-import { fontManager } from '#core/text/fonts'
-import { textFontFace } from '#core/text/requirements'
+import { textFontFace } from '#core/text/requirements/collect'
 
 /** A face text draws in, and its name as Figma names it in its messages. */
 interface DescribedFace {

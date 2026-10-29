@@ -1,15 +1,11 @@
+import type { SceneNode } from '@open-pencil/scene-graph'
 import { parseFontStyle, standardStyleName } from '@open-pencil/scene-graph/font-style'
 
 import type { FamilyFace } from '#core/text/font/faces'
-import { fontManager } from '#core/text/fonts'
+import { fontManager } from '#core/text/font/manager'
 
 /** A text's or a character's face: its family, weight, and slant, and the name it was given. */
-export interface NamedFaceStyle {
-  fontFamily: string
-  fontWeight: number
-  italic: boolean
-  fontStyle: string | null
-}
+export type TextFace = Pick<SceneNode, 'fontFamily' | 'fontWeight' | 'italic' | 'fontStyle'>
 
 /**
  * The name the family's font gives its face at `weight` and slant, as Figma names a face; the
@@ -17,18 +13,18 @@ export interface NamedFaceStyle {
  */
 export function faceStyleName(family: string, weight: number, italic: boolean): string {
   const face = fontManager
-    .namedFamilyFaces(family)
+    .familyFacesSync(family)
     ?.find((candidate) => candidate.weight === weight && candidate.italic === italic)
   return face?.style ?? standardStyleName(weight, italic)
 }
 
 /** The name of the face a text draws in: the one it was given, else its font's own. */
-export function textStyleName(style: NamedFaceStyle): string {
+export function textStyleName(style: TextFace): string {
   return style.fontStyle ?? faceStyleName(style.fontFamily, style.fontWeight, style.italic)
 }
 
 /** A name compared without case or spaces, so "Semi Bold" and "SemiBold" name one face. */
-function spelled(style: string): string {
+function spellingKey(style: string): string {
   return style.toLowerCase().replace(/\s+/gu, '')
 }
 
@@ -38,10 +34,10 @@ function spelled(style: string): string {
  * the family's faces do not hold, or while they are unknown, stays as asked, with the weight and
  * slant its words stand for.
  */
-export function namedFace(family: string, style: string): FamilyFace {
-  const faces = fontManager.namedFamilyFaces(family) ?? []
+export function faceForStyle(family: string, style: string): FamilyFace {
+  const faces = fontManager.familyFacesSync(family) ?? []
   const face =
     faces.find((candidate) => candidate.style === style) ??
-    faces.find((candidate) => spelled(candidate.style) === spelled(style))
+    faces.find((candidate) => spellingKey(candidate.style) === spellingKey(style))
   return face ?? { ...parseFontStyle(style), style }
 }

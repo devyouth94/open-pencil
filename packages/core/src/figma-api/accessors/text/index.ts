@@ -12,7 +12,8 @@ import {
   type NodeProxyInternals,
   type ProxyThis
 } from '#core/figma-api/accessor-utils'
-import type { FigmaFontNameInput } from '#core/figma-api/fonts'
+import { assertFontLoaded, assertTextFontsLoaded } from '#core/figma-api/fonts/loaded'
+import type { FigmaFontNameInput } from '#core/figma-api/fonts/names'
 import {
   getParagraphSpacing,
   letterSpacingValue,
@@ -23,7 +24,6 @@ import {
   type FigmaLetterSpacing,
   type FigmaLineHeight
 } from '#core/figma-api/text'
-import { assertFontLoaded, assertTextFontsLoaded } from '#core/figma-api/text/loaded-fonts'
 import { getTextStyle, type TextSegmentField } from '#core/figma-api/text/style'
 import { styleRunsWithPatch, textStyleChanges } from '#core/text/character-style'
 

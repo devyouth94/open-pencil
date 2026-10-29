@@ -14,7 +14,7 @@ import { getSharedStyles, SHARED_TEXT_STYLE_FIELDS } from '@open-pencil/scene-gr
 
 import { variableAlias, type FigmaVariableAlias } from '#core/figma-api/variables/values'
 import { styleRunsWithPatch } from '#core/text/character-style'
-import { namedFace } from '#core/text/font/names'
+import { faceForStyle } from '#core/text/font/names'
 
 import { getStyledTextSegments } from './style'
 
@@ -89,7 +89,7 @@ function boundValue(
     if (typeof value !== 'string') return {}
     if (field === 'fontFamily') return { fontFamily: value }
     // A style variable names a face of the text's family, as its font names it.
-    const face = namedFace(node.fontFamily, value)
+    const face = faceForStyle(node.fontFamily, value)
     return { fontWeight: face.weight, italic: face.italic, fontStyle: face.style }
   }
   const value = graph.resolveNumberVariableForNode(node.id, variable.id)

@@ -7,7 +7,7 @@ import type {
   TypefaceFontProvider
 } from 'canvaskit-wasm'
 
-import { weightToStyle } from '@open-pencil/scene-graph/font-style'
+import { faceLoadKey } from '@open-pencil/scene-graph/font-style'
 import type { Size } from '@open-pencil/scene-graph/primitives'
 import { detectTextDirection } from '@open-pencil/scene-graph/text/direction'
 
@@ -33,7 +33,7 @@ export interface LabelFontOptions {
 
 /** Semibold labels are section titles, drawn in their own face; the rest in Inter. */
 function labelFontFamilies(weight: number): string[] {
-  const families = resolveParagraphFontFamilies(DEFAULT_FONT_FAMILY, weightToStyle(weight))
+  const families = resolveParagraphFontFamilies(DEFAULT_FONT_FAMILY, faceLoadKey(weight))
   return weight >= 600 ? [SECTION_TITLE_FONT_FAMILY, ...families] : families
 }
 

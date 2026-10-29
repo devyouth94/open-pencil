@@ -3,7 +3,7 @@ import type { CharacterStyleOverride, SceneNode } from '@open-pencil/scene-graph
 import { normalizeFontFamily } from '@open-pencil/scene-graph/font-style'
 
 import { applyFontFeaturesToKiwi } from '../font/features'
-import { figmaStyleName, standardFaceNamer, type FaceStyleNamer } from '../font/style'
+import { figmaStyleName, standardStyleNamer, type StyleNamer } from '../font/style'
 import { stringToFigmaAxisTag } from '../font/variations'
 import { exportTextLines } from './lines'
 import { figmaLetterSpacing, figmaLineHeight } from './values'
@@ -40,7 +40,7 @@ function textStyleOverrideToKiwi(
   style: CharacterStyleOverride,
   node: SceneNode,
   fillToKiwiPaint: (fill: SceneNode['fills'][number]) => Paint,
-  nameFace: FaceStyleNamer
+  nameFace: StyleNamer
 ): NodeChange {
   const override: Record<string, unknown> = { styleID: id }
   override.fontName = {
@@ -107,7 +107,7 @@ export function characterStyleIDs(node: SceneNode): number[] {
 export function exportTextData(
   node: SceneNode,
   fillToKiwiPaint: (fill: SceneNode['fills'][number]) => Paint,
-  nameFace: FaceStyleNamer = standardFaceNamer
+  nameFace: StyleNamer = standardStyleNamer
 ): NodeChange['textData'] {
   const { charIds, styleMap } = collectTextStyleOverrides(node)
   const characterOverrides = [...styleMap.values()].map(({ id, style }) =>

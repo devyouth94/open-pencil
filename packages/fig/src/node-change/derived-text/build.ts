@@ -2,7 +2,7 @@ import { groupBy } from 'es-toolkit/array'
 
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import type { CharacterStyleOverride, DerivedTextGlyph, SceneNode } from '@open-pencil/scene-graph'
-import { normalizeFontFamily, weightToStyle } from '@open-pencil/scene-graph/font-style'
+import { normalizeFontFamily, faceLoadKey } from '@open-pencil/scene-graph/font-style'
 import {
   hasTextList,
   lineHeightPixels,
@@ -12,7 +12,7 @@ import {
 
 import { bytesToHex } from '../bytes'
 import type { PlacedTextGlyph, TextDecorationRecord } from '../export/runtime'
-import { figmaStyleName, standardFaceNamer, type FaceStyleNamer } from '../font/style'
+import { figmaStyleName, standardStyleNamer, type StyleNamer } from '../font/style'
 import { bakeGlyphScale, encodePathCommandsBlob, type OutlineCommand } from '../path/commands'
 import { characterStyleIDs } from '../text/data-export'
 import { buildDerivedTextData } from './data'
@@ -55,7 +55,7 @@ export interface DerivedTextBuildContext {
   shapeText(node: SceneNode): ShapedText | null
   textDecorations(node: SceneNode, glyphs: readonly PlacedTextGlyph[]): TextDecorationRecord[]
   /** The name a family's font gives a face; Google Fonts' names when left out. */
-  fontStyleName?: FaceStyleNamer
+  fontStyleName?: StyleNamer
 }
 
 // Figma stores a whitespace glyph as a lone close command.
@@ -73,7 +73,7 @@ function appendGlyphBlob(context: DerivedTextBuildContext, blob: Uint8Array): nu
 function fontMetaData(
   node: SceneNode,
   digestMap: Map<string, Uint8Array>,
-  nameFace: FaceStyleNamer
+  nameFace: StyleNamer
 ): DerivedTextData['fontMetaData'] {
   const fonts: NonNullable<DerivedTextData['fontMetaData']> = []
   const seen = new Set<string>()
@@ -88,7 +88,7 @@ function fontMetaData(
     fonts.push({
       key: { family: normalized, style: name, postscript: '' },
       fontLineHeight: 1.2,
-      fontDigest: digestMap.get(`${normalized}|${weightToStyle(weight, italic)}`),
+      fontDigest: digestMap.get(`${normalized}|${faceLoadKey(weight, italic)}`),
       fontStyle: italic ? 'ITALIC' : 'NORMAL',
       fontWeight: weight
     })
@@ -289,7 +289,7 @@ export function buildNodeDerivedTextData(
   node: SceneNode,
   context: DerivedTextBuildContext
 ): NodeChange['derivedTextData'] {
-  const fonts = fontMetaData(node, context.digestMap, context.fontStyleName ?? standardFaceNamer)
+  const fonts = fontMetaData(node, context.digestMap, context.fontStyleName ?? standardStyleNamer)
   const saved = node.derivedTextGlyphs ?? []
   if (saved.length > 0) {
     return buildDerivedTextData({

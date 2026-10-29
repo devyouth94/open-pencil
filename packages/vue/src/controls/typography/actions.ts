@@ -10,7 +10,7 @@ import type {
   TextListType,
   TextParagraphSpacingField
 } from '@open-pencil/scene-graph'
-import { weightToStyle } from '@open-pencil/scene-graph/font-style'
+import { faceLoadKey } from '@open-pencil/scene-graph/font-style'
 import { shapeWithTextLabel } from '@open-pencil/scene-graph/generated'
 
 import {
@@ -210,7 +210,7 @@ export function createTypographyActions({
         const face = known ? nearestFamilyFace(known, target.fontWeight, target.italic) : null
         const fontWeight = face?.weight ?? target.fontWeight
         const italic = face?.italic ?? target.italic
-        await options.fontLoader?.load(family, weightToStyle(fontWeight, italic))
+        await options.fontLoader?.load(family, faceLoadKey(fontWeight, italic))
         return {
           fontFamily: family,
           fontWeight,
@@ -227,7 +227,7 @@ export function createTypographyActions({
       'Change font weight',
       ['fontWeight'],
       async (target) => {
-        await options.fontLoader?.load(target.fontFamily, weightToStyle(weight, target.italic))
+        await options.fontLoader?.load(target.fontFamily, faceLoadKey(weight, target.italic))
         return { fontWeight: weight, fontVariations: styleFontVariations(target) }
       },
       targets
@@ -347,7 +347,7 @@ export function createTypographyActions({
       'Toggle italic',
       ['italic'],
       async (target) => {
-        await options.fontLoader?.load(target.fontFamily, weightToStyle(target.fontWeight, italic))
+        await options.fontLoader?.load(target.fontFamily, faceLoadKey(target.fontWeight, italic))
         return { italic, fontVariations: styleFontVariations(target) }
       },
       nodes.value.filter((target) => supports(target, target.fontWeight, italic))

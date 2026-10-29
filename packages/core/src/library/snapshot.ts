@@ -119,7 +119,7 @@ export function extractLibrarySnapshot(
 function libraryField(node: SceneNode, key: string, value: unknown): unknown {
   // Plugin content such as a behaviour is part of the asset; its bookkeeping is not.
   if (key === 'pluginData') return contentPluginData(node.pluginData)
-  if (key === 'fontStyle') return libraryFaceName(node)
+  if (key === 'fontStyle') return libraryStyleName(node)
   return normalizedLibraryField(key, value)
 }
 
@@ -127,7 +127,7 @@ function libraryField(node: SceneNode, key: string, value: unknown): unknown {
  * The face a text's name names, compared as a name: a file writes the name the text left to its
  * weight and slant, and spells some as Figma's fonts do ("Semi Bold" for "SemiBold").
  */
-function libraryFaceName(node: SceneNode): string {
+function libraryStyleName(node: SceneNode): string {
   return (node.fontStyle ?? standardStyleName(node.fontWeight, node.italic))
     .toLowerCase()
     .replace(/\s+/gu, '')

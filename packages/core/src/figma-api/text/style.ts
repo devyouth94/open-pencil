@@ -8,7 +8,7 @@ import {
   paragraphStyleAt
 } from '@open-pencil/scene-graph/text'
 
-import { readVariationSettings } from '#core/figma-api/fonts'
+import { readVariationSettings } from '#core/figma-api/fonts/variations'
 import { toFigmaPaint, type FigmaPaint } from '#core/figma-api/paints'
 import { variableAlias } from '#core/figma-api/variables/values'
 import { characterStyles, nodeStyle, type CharacterStyle } from '#core/text/character-style'

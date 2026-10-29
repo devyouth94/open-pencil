@@ -1,9 +1,9 @@
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 
 import { DEFAULT_FONT_FAMILY } from '#core/constants'
+import { fontManager, type FontManager } from '#core/text/font/manager'
 import type { FontLoadedSource, FontUnavailableReason } from '#core/text/font/sources'
-import { fontManager, type FontManager } from '#core/text/fonts'
-import { collectNodeFontFaces } from '#core/text/requirements'
+import { collectNodeFontFaces } from '#core/text/requirements/collect'
 
 export type FontFaceStatus = 'available' | 'substituted' | 'unresolved'
 

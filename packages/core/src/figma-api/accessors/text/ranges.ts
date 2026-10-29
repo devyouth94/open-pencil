@@ -22,14 +22,17 @@ import {
   type NodeProxyInternals,
   type ProxyThis
 } from '#core/figma-api/accessor-utils'
+import { assertFontLoaded, assertTextFontsLoaded } from '#core/figma-api/fonts/loaded'
 import {
   fontNameInputStyle,
-  readVariationSettings,
   type CurrentFont,
   type FigmaFontName,
-  type FigmaFontNameInput,
+  type FigmaFontNameInput
+} from '#core/figma-api/fonts/names'
+import {
+  readVariationSettings,
   type FigmaVariationSettings
-} from '#core/figma-api/fonts'
+} from '#core/figma-api/fonts/variations'
 import { parseFigmaPaints, type FigmaPaint } from '#core/figma-api/paints'
 import {
   getRangeIndentation,
@@ -40,7 +43,6 @@ import {
   setRangeParagraphSpacing,
   type FigmaLetterSpacing
 } from '#core/figma-api/text'
-import { assertFontLoaded, assertTextFontsLoaded } from '#core/figma-api/text/loaded-fonts'
 import {
   assertTextRange,
   getRangeTextStyle,
