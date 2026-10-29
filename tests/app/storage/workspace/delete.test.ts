@@ -12,14 +12,24 @@ const CLOUD = { providerId: 'cloud', profileId: 'server', containerId: 'workspac
 const POSTER = { id: 'poster', name: 'Poster', updatedAt: '2026-10-01T00:00:00.000Z' }
 
 let store: LocalCanvasStore
+let recentBefore: typeof recentDocuments.value
+
+const recentPoster = () =>
+  recentDocuments.value.some(
+    (document) => document.kind === 'storage' && document.documentId === POSTER.id
+  )
 
 beforeEach(() => {
+  // Recent files live in shared storage; each test starts from none and leaves them as it found them.
+  recentBefore = recentDocuments.value
+  recentDocuments.value = []
   store = createMemoryLocalCanvasStore()
   resetLocalCanvasStoreForTests(store)
   resetOutboxForTests(createMemoryOutbox())
 })
 
 afterEach(() => {
+  recentDocuments.value = recentBefore
   resetLocalCanvasStoreForTests()
   resetOutboxForTests()
 })
@@ -34,6 +44,7 @@ describe('deleting a stored document', () => {
       syncStatus: 'synced'
     })
     rememberRecentStorageDocument({ ...BUCKET, documentId: POSTER.id }, POSTER.name)
+    expect(recentPoster()).toBe(true)
     const events: string[] = []
     const stop = onStorageWorkspaceEvent((event) =>
       events.push(`${event.kind}:${event.documentId}`)
@@ -44,7 +55,7 @@ describe('deleting a stored document', () => {
 
     expect(await store.listMetas()).toEqual([])
     expect(await getOutbox().list()).toMatchObject([{ canvasId: POSTER.id, type: 'deleteCanvas' }])
-    expect(recentDocuments.value.some((document) => document.name === POSTER.name)).toBe(false)
+    expect(recentPoster()).toBe(false)
     expect(events).toContain(`changed:${POSTER.id}`)
   })
 
