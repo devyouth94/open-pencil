@@ -45,7 +45,8 @@ export default defineConfig([
       'open-pencil/no-ui-imports-in-core': 'error',
       'open-pencil/no-graph-builders-in-front-ends': 'error',
       'open-pencil/scripts-are-entrypoint-shims': 'error',
-      'open-pencil/strict-tools-layout': 'error'
+      'open-pencil/strict-tools-layout': 'error',
+      'open-pencil/unique-component-names': 'error'
     }
   }
 ])
