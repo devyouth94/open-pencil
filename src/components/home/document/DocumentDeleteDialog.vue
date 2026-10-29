@@ -4,6 +4,7 @@ import { ref, shallowRef, watch } from 'vue'
 import { useCommonMessages, useFileMessages } from '@open-pencil/vue/i18n'
 
 import type { StorageDocument, StorageLocation } from '@/app/integrations/storage'
+import { toast } from '@/app/shell/ui'
 import { deleteStoredDocument } from '@/app/storage/workspace/delete'
 import { AppConfirmationDialog } from '@/components/ui/dialog'
 
@@ -32,6 +33,7 @@ function confirm() {
   if (!deleting) return
   void deleteStoredDocument(deleting, location).catch((error: unknown) => {
     console.error('[Storage] Deleting a document failed:', error)
+    toast.error(files.value.deleteDocumentFailed({ name: deleting.name }))
   })
 }
 </script>

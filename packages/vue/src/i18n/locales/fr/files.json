@@ -29,7 +29,8 @@
   "documentActions": "Actions pour {name}",
   "deleteDocument": "Supprimer",
   "deleteDocumentConfirmation": "Supprimer « {name} » ?",
-  "deleteDocumentDescription": "Le document est supprimé pour toutes les personnes qui peuvent l’ouvrir, et ses onglets ouverts se ferment. Cette action est irréversible.",
+  "deleteDocumentDescription": "Le document est supprimé pour toutes les personnes qui peuvent l’ouvrir. Cette action est irréversible.",
+  "deleteDocumentFailed": "Impossible de supprimer « {name} ». Réessayez.",
   "saveAsPrompt": "Enregistrer sous :",
   "browserFileAPINotSupported": "Votre navigateur ne prend pas en charge l’API de fichiers locaux. Les fichiers seront téléchargés au lieu d’être enregistrés sur place.",
   "newDesignIn": "Nouveau design dans {place}"

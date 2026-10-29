@@ -29,7 +29,8 @@
   "documentActions": "{name} の操作",
   "deleteDocument": "削除",
   "deleteDocumentConfirmation": "「{name}」を削除しますか？",
-  "deleteDocumentDescription": "このドキュメントは開けるすべての人に対して削除され、開いているタブも閉じます。この操作は元に戻せません。",
+  "deleteDocumentDescription": "このドキュメントは開けるすべての人に対して削除されます。この操作は元に戻せません。",
+  "deleteDocumentFailed": "「{name}」を削除できませんでした。もう一度お試しください。",
   "saveAsPrompt": "名前を付けて保存：",
   "browserFileAPINotSupported": "このブラウザはローカルファイルAPIに対応していません。ファイルは同じ場所に保存されず、ダウンロードされます。",
   "newDesignIn": "{place} に新規デザイン"

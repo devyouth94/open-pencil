@@ -41,7 +41,8 @@ export const filesMessageDefaults = {
   deleteDocument: 'Delete',
   deleteDocumentConfirmation: params('Delete “{name}”?'),
   deleteDocumentDescription:
-    'The document is deleted for everyone who can open it, and any open tabs of it close. This can’t be undone.',
+    'The document is deleted for everyone who can open it. This can’t be undone.',
+  deleteDocumentFailed: params('Couldn’t delete “{name}”. Try again.'),
   saveAsPrompt: 'Save as:',
   browserFileAPINotSupported:
     "Your browser doesn't support the local file API. Files will be downloaded instead of saved in place."
