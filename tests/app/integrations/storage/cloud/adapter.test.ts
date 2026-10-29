@@ -158,6 +158,14 @@ function cloudServer() {
       }
     ],
     [
+      'DELETE',
+      /^\/documents\/([^/]+)$/,
+      ([, id = '']) =>
+        documents.delete(id)
+          ? new Response(null, { status: 204 })
+          : json({ error: { code: 'not_found' } }, 404)
+    ],
+    [
       'GET',
       /^\/documents\/([^/]+)$/,
       async ([, id = '']) => {
@@ -287,6 +295,18 @@ function adapter(server: ReturnType<typeof cloudServer>) {
 }
 
 describe('Cloud storage adapter', () => {
+  test('deletes a document, and counts one already gone as deleted', async () => {
+    const storage = adapter(cloudServer())
+    const id = crypto.randomUUID()
+    await storage.putDocument(id, new TextEncoder().encode('design'), {
+      name: 'Old',
+      updatedAt: ''
+    })
+    await storage.deleteDocument(id)
+    await storage.deleteDocument(id)
+    expect(await storage.listDocuments()).toEqual([])
+  })
+
   test('creates the document on its first save and opens what it saved', async () => {
     const server = cloudServer()
     const storage = adapter(server)
