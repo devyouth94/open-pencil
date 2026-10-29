@@ -82,7 +82,7 @@ const accessibleLabel = computed(() => {
 const styles = computed(() => tv(theme)({ suffix: Boolean(slots.suffix) }))
 
 const emit = defineEmits<{
-  'update:modelValue': [value: number]
+  'update:modelValue': [value: number, unit?: string]
   'editing-change': [editing: boolean]
   commit: [value: number, previous: number, unit?: string]
   cancel: []
@@ -108,7 +108,7 @@ defineOptions({ inheritAttrs: false })
     :bound="bound"
     :edit-policy="editPolicy"
     :units="units"
-    @update:model-value="emit('update:modelValue', $event)"
+    @update:model-value="(value: number, unit?: string) => emit('update:modelValue', value, unit)"
     @commit="(val: number, prev: number, unit?: string) => emit('commit', val, prev, unit)"
     @cancel="emit('cancel')"
     @invalid="

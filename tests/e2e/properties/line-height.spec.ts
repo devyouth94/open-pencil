@@ -99,6 +99,8 @@ test('a typed % or px switches the unit of line height and letter spacing', asyn
   await lineHeight.focus()
   await lineHeight.fill('150%')
   await lineHeight.press('ArrowUp')
+  // The canvas previews the stepped value in the unit typed, before Enter commits it.
+  await expect.poll(() => read('lineHeight')).toEqual({ value: 151, unit: 'PERCENT' })
   await lineHeight.press('Enter')
   await expect.poll(() => read('lineHeight')).toEqual({ value: 151, unit: 'PERCENT' })
   await type('Line height', '30px')

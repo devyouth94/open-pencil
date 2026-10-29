@@ -66,7 +66,7 @@ function setMode(mode: string) {
     :node-ids="nodeIds"
     :units="TEXT_LENGTH_UNITS"
     binding-path="lineHeight"
-    @update:model-value="emit('update', length($event))"
+    @update:model-value="(value, unit) => emit('update', length(value, unit))"
     @commit="commit"
   >
     <template #icon><icon-lucide-baseline class="size-3" /></template>

@@ -34,7 +34,7 @@ function commit(current: number, previous: number, unit?: string) {
     :node-ids="nodes.map((node) => node.id)"
     :units="TEXT_LENGTH_UNITS"
     binding-path="letterSpacing"
-    @update:model-value="emit('update', length($event))"
+    @update:model-value="(value, unit) => emit('update', length(value, unit))"
     @commit="commit"
   >
     <template #icon>

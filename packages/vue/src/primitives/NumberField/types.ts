@@ -37,7 +37,7 @@ export interface NumberFieldRootProps {
 
 export interface NumberFieldRootEmits {
   /** Emitted for live numeric updates and committed expression results. */
-  (event: 'update:modelValue', value: number): void
+  (event: 'update:modelValue', value: number, unit?: string): void
   /** Emitted once after a changed interaction is committed, with the unit typed after the value. */
   (event: 'commit', value: number, previous: number, unit?: string): void
   /** Emitted after restoring a cancelled or invalid interaction. */

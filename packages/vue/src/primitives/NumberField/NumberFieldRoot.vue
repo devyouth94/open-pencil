@@ -117,11 +117,12 @@ function beginInteraction() {
   invalidReason.value = null
 }
 
-function updateValue(value: number) {
+/** Shows `value` live, in the unit typed after it when there is one. */
+function updateValue(value: number, unit?: string) {
   const normalized = normalizeNumberValue(clampNumberValue(value, min, max))
   workingValue.value = normalized
   if (binding?.actions.applyValue(normalized)) return
-  if (modelValue !== normalized) emit('update:modelValue', normalized)
+  if (modelValue !== normalized || unit) emit('update:modelValue', normalized, unit)
 }
 
 function restoreInteractionValue() {
@@ -135,7 +136,7 @@ function restoreInteractionValue() {
 }
 
 function finishCommit(value: number, unit?: string) {
-  updateValue(value)
+  updateValue(value, unit)
   editing.value = false
   if (
     mutationRequested ||
@@ -312,7 +313,7 @@ function stepValueFromKeyboard(event: KeyboardEvent) {
     min,
     max
   )
-  updateValue(next)
+  updateValue(next, draft?.unit)
   draftValue.value = `${next}${draft?.unit ?? ''}`
   absoluteDraft = draftValue.value
 

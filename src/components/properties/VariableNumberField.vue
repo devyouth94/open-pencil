@@ -48,7 +48,7 @@ const {
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: number]
+  'update:modelValue': [value: number, unit?: string]
   commit: [value: number, previous: number, unit?: string]
   cancel: []
 }>()
@@ -97,7 +97,7 @@ defineOptions({ inheritAttrs: false })
       :ui="{ root: bindingStyles.root }"
       :data-property="bindingPath"
       :aria-label="accessibleLabel"
-      @update:model-value="emit('update:modelValue', $event)"
+      @update:model-value="(value: number, unit?: string) => emit('update:modelValue', value, unit)"
       @commit="
         (value: number, previous: number, unit?: string) => emit('commit', value, previous, unit)
       "
