@@ -99,10 +99,14 @@ describe('text faces', () => {
     const ck = await getCanvasKit()
     const fontProvider = ck.TypefaceFontProvider.Make()
     fontManager.attachProvider(ck, fontProvider)
-    await fontManager.markLoaded(FAMILY, 'Regular', await bundled('/InterVariable.ttf'))
-    const regular = drawn(ck, fontProvider, { fontWeight: 400, italic: false })
-    expect(drawn(ck, fontProvider, { fontWeight: 400, italic: true })).toEqual(regular)
-    expect(drawn(ck, fontProvider, { fontWeight: 700, italic: false })).toEqual(regular)
+    // A family of its own, whose Bold and italic no other test loads.
+    const fontFamily = 'Faces Test Missing'
+    await fontManager.markLoaded(fontFamily, 'Regular', await bundled('/InterVariable.ttf'))
+    const face = (weight: number, italic: boolean) =>
+      drawn(ck, fontProvider, { fontFamily, fontWeight: weight, italic })
+    const regular = face(400, false)
+    expect(face(400, true)).toEqual(regular)
+    expect(face(700, false)).toEqual(regular)
   })
 
   test('draws a face the family has loaded', async () => {
@@ -135,6 +139,13 @@ describe('text faces', () => {
     expect(
       face({ opticalSizeFromFontSize: false, fontVariations: [{ axis: 'opsz', value: 32 }] })
     ).toEqual(automatic)
+    // A range detaches its own optical size, as Figma saves one, over text that follows it.
+    const range = (style: Partial<SceneNode['styleRuns'][number]['style']>) =>
+      face({ styleRuns: [{ start: 0, length: 5, style }] })
+    expect(range({ fontVariations: [{ axis: 'opsz', value: 14 }] })).toEqual(automatic)
+    expect(
+      range({ opticalSizeFromFontSize: false, fontVariations: [{ axis: 'opsz', value: 14 }] })
+    ).toEqual(face({ opticalSizeFromFontSize: false, fontVariations: [{ axis: 'opsz', value: 14 }] }))
   })
 
   test('draws each style of a family loaded from several files from its own file', async () => {

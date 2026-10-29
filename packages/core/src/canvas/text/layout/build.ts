@@ -181,9 +181,10 @@ function markerNode(node: ParagraphNode, item: TextListItem, style: ListStyle): 
     letterSpacing: override?.letterSpacing ?? node.letterSpacing,
     lineHeight: override?.lineHeight !== undefined ? override.lineHeight : node.lineHeight,
     fontVariations: override?.fontVariations ?? node.fontVariations,
+    opticalSizeFromFontSize: override?.opticalSizeFromFontSize ?? node.opticalSizeFromFontSize,
     fontFeatures:
       item.listType === 'ORDERED' ? [...features, { tag: 'TNUM', enabled: true }] : features,
-    textLanguage: override?.textLanguage ?? node.textLanguage,
+    textLanguage: override?.textLanguage !== undefined ? override.textLanguage : node.textLanguage,
     styleRuns: override?.fills
       ? [{ start: 0, length: item.marker.length, style: { fills: override.fills } }]
       : [],

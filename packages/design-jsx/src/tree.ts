@@ -175,6 +175,17 @@ export type StyleProps = {
   lineHeight?: number | `${number}%` | 'auto' | DesignVariable
   /** Pixels, or a percent of the font size such as `'5%'`. */
   letterSpacing?: number | `${number}%` | DesignVariable
+  /** OpenType features on or off by tag, as CSS's `font-feature-settings`: `{ tnum: true }`. */
+  fontFeatures?: Record<string, boolean>
+  /** Variable-font axis values by tag, as CSS's `font-variation-settings`: `{ wght: 650 }`. */
+  fontVariations?: Record<string, number>
+  /** The language the text is in, as a BCP 47 tag such as `de` or `sr-Latn`. */
+  lang?: string | null
+  /**
+   * Whether a variable font's optical size follows the font size (`auto`, the default) or takes
+   * the `opsz` in `fontVariations` (`none`), as CSS's `font-optical-sizing`.
+   */
+  fontOpticalSizing?: 'auto' | 'none'
   font?: string
   fontFamily?: string
   weight?: number | 'bold' | 'medium' | 'normal'
@@ -210,6 +221,14 @@ export type EllipseProps = {
   /** The hole as a share of the ellipse, from 0 (none) to 1. */
   innerRadius?: number
 }
+/** A `<Vector>`'s path, in SVG's syntax as `d` or as Figma's `vectorPaths`. */
+export type VectorProps = {
+  /** Path data as SVG writes it, filled under `fillRule`; an open subpath fills only without a stroke. */
+  d?: string
+  fillRule?: 'nonzero' | 'evenodd'
+  /** Paths with their own winding rules, as export writes them; `NONE` draws an open path. */
+  paths?: Array<{ windingRule: 'NONZERO' | 'EVENODD' | 'NONE'; data: string }>
+}
 export type TextProps = BaseProps
 
 /** A `<Span>`'s props: the character styles of `<Text>`, under the same names. */
@@ -226,6 +245,9 @@ export type SpanProps = Pick<
   | 'fills'
   | 'lineHeight'
   | 'letterSpacing'
+  | 'fontFeatures'
+  | 'fontVariations'
+  | 'lang'
 > & {
   key?: string | number
   style?: Record<string, unknown>

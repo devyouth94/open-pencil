@@ -149,7 +149,7 @@ function styleRunLanguage(
   style: SceneNode['styleRuns'][number]['style'],
   node: Pick<ParagraphNode, 'textLanguage'>
 ): string | undefined {
-  return style.textLanguage ?? node.textLanguage ?? undefined
+  return (style.textLanguage !== undefined ? style.textLanguage : node.textLanguage) ?? undefined
 }
 
 function pushStyleRun(
@@ -188,7 +188,7 @@ function pushStyleRun(
         italic: runItalic,
         fontSize: runFontSize,
         variations: style.fontVariations ?? node.fontVariations,
-        opticalSizeFromFontSize: node.opticalSizeFromFontSize
+        opticalSizeFromFontSize: style.opticalSizeFromFontSize ?? node.opticalSizeFromFontSize
       })
     ),
     fontFeatures: textFontFeatures(style.fontFeatures ?? node.fontFeatures),
