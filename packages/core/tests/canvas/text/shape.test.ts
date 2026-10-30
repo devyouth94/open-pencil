@@ -431,6 +431,30 @@ describe('saved outlines use the same font file as the paragraph', () => {
     }
   )
 
+  test('keeps an explicit fallback weight when the unloaded primary requests another weight', async () => {
+    const text = 'Missing'
+    const expected = expectDefined(
+      glyphOutlineSourceSync('Inter', 'Regular', [{ axis: 'wght', value: 500 }])
+    )
+    const overridden = expectDefined(
+      glyphOutlineSourceSync('Inter', 'Regular', [{ axis: 'wght', value: 700 }])
+    )
+    const shaped = expectDefined(
+      await shape({
+        text,
+        fontFamily: 'Unloaded Outline Primary',
+        fontWeight: 700,
+        fontVariations: [{ axis: 'wght', value: 500 }]
+      })
+    )
+    expect(shaped.glyphs).toHaveLength(text.length)
+    for (const glyph of shaped.glyphs) {
+      const index = expectDefined(glyph.firstCharacter)
+      expect(glyph.commands).toEqual(expected.outline(expected.glyphOf(text[index]), 13))
+      expect(glyph.commands).not.toEqual(overridden.outline(overridden.glyphOf(text[index]), 13))
+    }
+  })
+
   test('outlines characters supplied by a supplemental file', async () => {
     const family = 'Outline Coverage Shards'
     const cjk = await Bun.file(testFont('NotoSansCJK-Test.otf')).arrayBuffer()
